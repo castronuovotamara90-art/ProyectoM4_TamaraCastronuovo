@@ -1,97 +1,112 @@
 # ProyectoM4_TamaraCastronuovo
 
-Aplicación web de gestión de tareas desplegada en Vercel, con autenticación, CRUD persistente en Firestore y envío de emails reales mediante AWS SES a través de Vercel Functions.
+Aplicacion SPA para gestion de tareas por usuario, construida por etapas con deploy incremental en Vercel.
 
-## Descripción del proyecto
+## Estado actual
 
-Este proyecto implementa un gestor de tareas con foco en una arquitectura por capas para separar interfaz, lógica de negocio e integraciones externas. La aplicación contempla:
+Etapa activa: **A (base tecnica)**.
 
-- Autenticación funcional.
-- CRUD completo persistente en Firestore.
-- Envío real de emails con AWS SES.
-- Invocación de SES a través de Vercel Functions.
+Hoy el proyecto incluye:
 
-## Decisiones arquitectónicas
+- Bootstrap de frontend con React + TypeScript + Vite.
+- Configuracion de testing con Vitest + React Testing Library.
+- App placeholder para validar arranque, build y pruebas.
+- Plan operativo y tracker en la carpeta `plan/`.
 
-Se define una estructura por responsabilidades:
+Todavia no esta implementado en esta etapa:
 
-- `/src/pages`: vistas principales (login, registro, tareas).
-- `/src/components`: componentes de UI reutilizables.
-- `/src/features`: lógica por dominio (auth, tasks).
-- `/src/services`: servicios e integraciones (Firebase/Auth/Firestore/API).
-- `/src/routes`: enrutado y rutas protegidas.
-- `/src/hooks`: hooks reutilizables.
-- `/src/types`: tipos e interfaces compartidas.
-- `/src/utils`: utilidades auxiliares.
-- `/src/api`: capa dedicada a comunicación API.
-- `/functions`: Vercel Functions para backend serverless (emails con SES).
-- `/tests`: pruebas unitarias y de componentes con mocks.
+- Autenticacion Firebase.
+- CRUD de tareas con Firestore.
+- Envio de emails con AWS SES.
 
-## Instrucciones de instalación
+## Estructura del repositorio
+
+- `src/`: codigo del frontend.
+- `functions/`: Vercel Functions (backend serverless).
+- `tests/`: pruebas unitarias y de componentes.
+- `plan/`: roadmap por etapas y checklist de seguimiento.
+
+## Scripts
+
+- `npm run dev`: levanta el entorno de desarrollo.
+- `npm run build`: compila TypeScript y genera build de produccion.
+- `npm run preview`: sirve localmente el build generado.
+- `npm run test`: ejecuta la suite de tests una vez.
+- `npm run test:watch`: ejecuta tests en modo watch.
+- `npm run test:coverage`: ejecuta tests con cobertura.
+
+## Instalacion y ejecucion
 
 1. Instalar dependencias:
+
    ```bash
    npm install
    ```
-2. Copiar variables de entorno desde `.env.example` a `.env` y completar valores reales.
-3. Ejecutar en desarrollo:
+
+2. Copiar variables de entorno desde `.env.example`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Iniciar la app:
+
    ```bash
    npm run dev
    ```
 
-## Variables de entorno necesarias
+4. Ejecutar tests:
 
-Definidas en `.env.example`:
+   ```bash
+   npm run test
+   ```
 
-- `VITE_FIREBASE_API_KEY`
-- `VITE_FIREBASE_AUTH_DOMAIN`
-- `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_STORAGE_BUCKET`
-- `VITE_FIREBASE_MESSAGING_SENDER_ID`
-- `VITE_FIREBASE_APP_ID`
-- `AWS_REGION`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `SES_FROM_EMAIL`
-- `SES_TO_EMAIL`
-- `VITE_APP_URL`
-- `VITE_API_BASE_URL`
+## Variables de entorno
 
-> ⚠️ `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` son credenciales sensibles: definirlas solo en variables de entorno seguras (local/Vercel), nunca versionarlas, exponerlas en cliente ni registrarlas en logs.
+Las variables esperadas estan definidas en `.env.example`:
 
-## URL de producción
+- Firebase (cliente):
+  - `VITE_FIREBASE_API_KEY`
+  - `VITE_FIREBASE_AUTH_DOMAIN`
+  - `VITE_FIREBASE_PROJECT_ID`
+  - `VITE_FIREBASE_STORAGE_BUCKET`
+  - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+  - `VITE_FIREBASE_APP_ID`
+- AWS SES (serverless):
+  - `AWS_REGION`
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+  - `SES_FROM_EMAIL`
+  - `SES_TO_EMAIL`
+- Frontend/API:
+  - `VITE_APP_URL`
+  - `VITE_API_BASE_URL`
 
-- https://proyectom4-tamaracastronuovo.vercel.app
+## Seguridad
 
-> Mantener esta URL actualizada cuando cambie el dominio de despliegue.
+- `.env` esta ignorado por git y no debe versionarse.
+- Credenciales AWS deben vivir solo en variables de entorno locales y de Vercel.
+- Nunca exponer secretos en frontend ni en logs.
 
-## Flujo de envío de emails
+## Deploy
 
-1. El usuario ejecuta una acción en la app que requiere notificación por email.
-2. El frontend llama a una Vercel Function en `/functions`.
-3. La función valida el payload y usa credenciales AWS desde variables de entorno.
-4. La función invoca AWS SES para enviar el correo.
-5. La función responde al frontend con éxito/error para feedback en UI.
+El proyecto usa `vercel.json` con:
 
-## Integración de IA en el proceso
+- `buildCommand`: `npm run build`
+- `outputDirectory`: `dist`
 
-La IA se utilizó para:
+La URL publica se agregara una vez realizado el primer deploy de la Etapa A.
 
-- Acelerar organización inicial de arquitectura por capas.
-- Revisar cobertura de requisitos del entregable antes de validar cambios.
-- Refinar estructura de documentación para dejar claros setup, entorno y despliegue.
+## Plan por etapas
 
-Situaciones donde fue más efectiva:
+El roadmap y su seguimiento estan en:
 
-- Checklists de cumplimiento de entregables.
-- Detección de omisiones en README y variables de entorno.
+- `plan/README.md`
+- `plan/tracker.md`
+- `plan/etapa-a.md`
 
-Patrones y buenas prácticas descubiertas:
+Cada etapa solo se considera cerrada cuando cumple tres condiciones:
 
-- Validar requisitos con una lista explícita antes de codificar.
-- Mantener cambios pequeños y verificables por cada requisito.
-- Documentar el flujo extremo a extremo (UI → Function → SES) para facilitar soporte.
-
-## Commits
-
-Se recomienda mantener commits semánticos y descriptivos (por ejemplo: `feat: ...`, `fix: ...`, `docs: ...`, `chore: ...`).
+1. Alcance funcional implementado.
+2. Tests automatizados en verde.
+3. Documentacion actualizada en este README.
