@@ -10,6 +10,7 @@ type Task = {
   id: number;
   title: string;
   userEmail: string;
+  completed: boolean;
 };
 
 const DEMO_USER = {
@@ -23,7 +24,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: "Revisar roadmap", userEmail: "usuario@demo.com" }
+    { id: 1, title: "Revisar roadmap", userEmail: "usuario@demo.com", completed: false }
   ]);
 
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
@@ -62,9 +63,29 @@ function App() {
     }
 
     setTasks((currentTasks) => [
-      { id: Date.now(), title: trimmedTitle, userEmail: session.email },
+      { id: Date.now(), title: trimmedTitle, userEmail: session.email, completed: false },
       ...currentTasks
     ]);
+  };
+
+  const handleUpdateTask = (taskId: number, nextTitle: string) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, title: nextTitle.trim() } : task
+      )
+    );
+  };
+
+  const handleToggleTaskComplete = (taskId: number) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
   };
 
   return (
@@ -93,6 +114,9 @@ function App() {
               tasks={tasks}
               onLogout={handleLogout}
               onAddTask={handleAddTask}
+              onUpdateTask={handleUpdateTask}
+              onToggleTaskComplete={handleToggleTaskComplete}
+              onDeleteTask={handleDeleteTask}
             />
           </ProtectedRoute>
         }
@@ -218,10 +242,23 @@ type DashboardPageProps = {
   tasks: Task[];
   onLogout: () => void;
   onAddTask: (title: string) => void;
+  onUpdateTask: (taskId: number, nextTitle: string) => void;
+  onToggleTaskComplete: (taskId: number) => void;
+  onDeleteTask: (taskId: number) => void;
 };
 
-function DashboardPage({ session, tasks, onLogout, onAddTask }: DashboardPageProps) {
+function DashboardPage({
+  session,
+  tasks,
+  onLogout,
+  onAddTask,
+  onUpdateTask,
+  onToggleTaskComplete,
+  onDeleteTask
+}: DashboardPageProps) {
   const [taskTitle, setTaskTitle] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
 
   if (!session) {
     return <Navigate to="/login" replace />;
@@ -233,6 +270,26 @@ function DashboardPage({ session, tasks, onLogout, onAddTask }: DashboardPagePro
     event.preventDefault();
     onAddTask(taskTitle);
     setTaskTitle("");
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTaskId(task.id);
+    setEditingTitle(task.title);
+  };
+
+  const handleSaveTask = () => {
+    if (editingTaskId === null) {
+      return;
+    }
+
+    const trimmedTitle = editingTitle.trim();
+    if (!trimmedTitle) {
+      return;
+    }
+
+    onUpdateTask(editingTaskId, trimmedTitle);
+    setEditingTaskId(null);
+    setEditingTitle("");
   };
 
   return (
@@ -270,7 +327,60 @@ function DashboardPage({ session, tasks, onLogout, onAddTask }: DashboardPagePro
           ) : (
             <ul>
               {userTasks.map((task) => (
-                <li key={task.id}>{task.title}</li>
+                <li key={task.id} className={task.completed ? "task-item complete" : "task-item"}>
+                  {editingTaskId === task.id ? (
+                    <>
+                      <input
+                        aria-label={`Editar tarea ${task.title}`}
+                        value={editingTitle}
+                        onChange={(event) => setEditingTitle(event.target.value)}
+                      />
+                      <div className="task-actions">
+                        <button type="button" className="small-button" onClick={handleSaveTask}>
+                          Guardar cambios
+                        </button>
+                        <button
+                          type="button"
+                          className="small-button secondary"
+                          onClick={() => {
+                            setEditingTaskId(null);
+                            setEditingTitle("");
+                          }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="task-main">
+                        <span className={task.completed ? "task-title completed" : "task-title"}>
+                          {task.title}
+                        </span>
+                        <span className="task-status">{task.completed ? "Completada" : "Pendiente"}</span>
+                      </div>
+                      <div className="task-actions">
+                        <button type="button" className="small-button" onClick={() => handleEditTask(task)}>
+                          Editar tarea
+                        </button>
+                        <button
+                          type="button"
+                          className="small-button"
+                          onClick={() => onToggleTaskComplete(task.id)}
+                        >
+                          {task.completed ? "Marcar como pendiente" : "Marcar como completada"}
+                        </button>
+                        <button
+                          type="button"
+                          className="small-button danger"
+                          onClick={() => onDeleteTask(task.id)}
+                        >
+                          Eliminar tarea
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </li>
               ))}
             </ul>
           )}
