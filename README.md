@@ -4,18 +4,20 @@ Aplicacion SPA para gestion de tareas por usuario, construida por etapas con dep
 
 ## Estado actual
 
-Etapa activa: **A (base tecnica)**.
+Etapa activa: **B1 (autenticacion email/password)**.
 
 Hoy el proyecto incluye:
 
 - Bootstrap de frontend con React + TypeScript + Vite.
 - Configuracion de testing con Vitest + React Testing Library.
-- App placeholder para validar arranque, build y pruebas.
+- App placeholder validada en Stage A.
+- Flujo de login con email/password y rutas protegidas.
 - Plan operativo y tracker en la carpeta `plan/`.
 
 Todavia no esta implementado en esta etapa:
 
-- Autenticacion Firebase.
+- Integracion con Firebase Auth real.
+- Google Sign-In.
 - CRUD de tareas con Firestore.
 - Envio de emails con AWS SES.
 

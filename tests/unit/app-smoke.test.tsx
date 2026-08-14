@@ -1,13 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import App from "../../src/App";
+import { renderWithRouter } from "../../src/test-utils/renderWithRouter";
 
 describe("App", () => {
-  it("muestra el estado de la etapa A", () => {
-    render(<App />);
+  it("muestra el formulario de login de la Etapa B1", () => {
+    renderWithRouter(<App />);
 
-    expect(
-      screen.getByRole("heading", { name: /gestor estrat.gico de tareas/i })
-    ).toBeInTheDocument();
-    expect(screen.getByText(/etapa a en progreso/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /inicia sesi[oó]n/i })).toBeInTheDocument();
+    expect(screen.getByText(/ingresa tus credenciales para continuar/i)).toBeInTheDocument();
   });
 });
