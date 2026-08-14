@@ -57,6 +57,8 @@ Definidas en `.env.example`:
 - `VITE_APP_URL`
 - `VITE_API_BASE_URL`
 
+> ⚠️ `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` son credenciales sensibles: definirlas solo en variables de entorno seguras (local/Vercel), nunca versionarlas, exponerlas en cliente ni registrarlas en logs.
+
 ## URL de producción
 
 - https://proyectom4-tamaracastronuovo.vercel.app
