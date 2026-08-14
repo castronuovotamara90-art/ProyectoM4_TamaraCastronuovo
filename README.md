@@ -63,6 +63,8 @@ Definidas en `.env.example`:
 
 - https://proyectom4-tamaracastronuovo.vercel.app
 
+> Mantener esta URL actualizada cuando cambie el dominio de despliegue.
+
 ## Flujo de envío de emails
 
 1. El usuario ejecuta una acción en la app que requiere notificación por email.
