@@ -6,6 +6,12 @@ type Session = {
   provider: "email" | "google";
 };
 
+type Task = {
+  id: number;
+  title: string;
+  userEmail: string;
+};
+
 const DEMO_USER = {
   email: "usuario@demo.com",
   password: "123456"
@@ -16,6 +22,9 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, title: "Revisar roadmap", userEmail: "usuario@demo.com" }
+  ]);
 
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,6 +54,19 @@ function App() {
     setPassword("");
   };
 
+  const handleAddTask = (title: string) => {
+    const trimmedTitle = title.trim();
+
+    if (!trimmedTitle || !session) {
+      return;
+    }
+
+    setTasks((currentTasks) => [
+      { id: Date.now(), title: trimmedTitle, userEmail: session.email },
+      ...currentTasks
+    ]);
+  };
+
   return (
     <Routes>
       <Route
@@ -66,7 +88,12 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={Boolean(session)}>
-            <DashboardPage session={session} onLogout={handleLogout} />
+            <DashboardPage
+              session={session}
+              tasks={tasks}
+              onLogout={handleLogout}
+              onAddTask={handleAddTask}
+            />
           </ProtectedRoute>
         }
       />
@@ -188,13 +215,25 @@ function ProtectedRoute({ isAuthenticated, children }: ProtectedRouteProps) {
 
 type DashboardPageProps = {
   session: Session | null;
+  tasks: Task[];
   onLogout: () => void;
+  onAddTask: (title: string) => void;
 };
 
-function DashboardPage({ session, onLogout }: DashboardPageProps) {
+function DashboardPage({ session, tasks, onLogout, onAddTask }: DashboardPageProps) {
+  const [taskTitle, setTaskTitle] = useState("");
+
   if (!session) {
     return <Navigate to="/login" replace />;
   }
+
+  const userTasks = tasks.filter((task) => task.userEmail === session.email);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onAddTask(taskTitle);
+    setTaskTitle("");
+  };
 
   return (
     <main className="dashboard-shell">
@@ -206,7 +245,38 @@ function DashboardPage({ session, onLogout }: DashboardPageProps) {
         <p className="dashboard-copy">
           Has ingresado correctamente a la gestion de tareas.
         </p>
-        <button type="button" className="primary-button" onClick={onLogout}>
+
+        <form onSubmit={handleSubmit} className="task-form">
+          <div className="field-group">
+            <label htmlFor="taskTitle">Titulo de la tarea</label>
+            <input
+              id="taskTitle"
+              type="text"
+              value={taskTitle}
+              onChange={(event) => setTaskTitle(event.target.value)}
+              placeholder="Escribe una tarea"
+            />
+          </div>
+
+          <button type="submit" className="primary-button">
+            Agregar tarea
+          </button>
+        </form>
+
+        <div className="task-list" aria-live="polite">
+          <h2>Tareas del usuario</h2>
+          {userTasks.length === 0 ? (
+            <p className="empty-state">Todavia no hay tareas para este usuario.</p>
+          ) : (
+            <ul>
+              {userTasks.map((task) => (
+                <li key={task.id}>{task.title}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <button type="button" className="primary-button logout-button" onClick={onLogout}>
           Cerrar sesión
         </button>
       </section>
