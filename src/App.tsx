@@ -26,6 +26,7 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([
     { id: 1, title: "Revisar roadmap", userEmail: "usuario@demo.com", completed: false }
   ]);
+  const [summaryStatus, setSummaryStatus] = useState("");
 
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,6 +54,7 @@ function App() {
     setSession(null);
     setEmail("");
     setPassword("");
+    setSummaryStatus("");
   };
 
   const handleAddTask = (title: string) => {
@@ -112,6 +114,8 @@ function App() {
             <DashboardPage
               session={session}
               tasks={tasks}
+              summaryStatus={summaryStatus}
+              onSummaryStatusChange={setSummaryStatus}
               onLogout={handleLogout}
               onAddTask={handleAddTask}
               onUpdateTask={handleUpdateTask}
@@ -240,6 +244,8 @@ function ProtectedRoute({ isAuthenticated, children }: ProtectedRouteProps) {
 type DashboardPageProps = {
   session: Session | null;
   tasks: Task[];
+  summaryStatus: string;
+  onSummaryStatusChange: (value: string) => void;
   onLogout: () => void;
   onAddTask: (title: string) => void;
   onUpdateTask: (taskId: number, nextTitle: string) => void;
@@ -250,6 +256,8 @@ type DashboardPageProps = {
 function DashboardPage({
   session,
   tasks,
+  summaryStatus,
+  onSummaryStatusChange,
   onLogout,
   onAddTask,
   onUpdateTask,
@@ -259,6 +267,7 @@ function DashboardPage({
   const [taskTitle, setTaskTitle] = useState("");
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [sendingSummary, setSendingSummary] = useState(false);
 
   if (!session) {
     return <Navigate to="/login" replace />;
@@ -290,6 +299,41 @@ function DashboardPage({
     onUpdateTask(editingTaskId, trimmedTitle);
     setEditingTaskId(null);
     setEditingTitle("");
+  };
+
+  const handleSendSummary = async () => {
+    if (!session) {
+      return;
+    }
+
+    setSendingSummary(true);
+    onSummaryStatusChange("");
+
+    try {
+      const response = await fetch("/api/send-summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userEmail: session.email,
+          tasks: userTasks.map((task) => ({
+            title: task.title,
+            completed: task.completed
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("No se pudo enviar el resumen.");
+      }
+
+      onSummaryStatusChange("Resumen enviado");
+    } catch {
+      onSummaryStatusChange("No se pudo enviar el resumen");
+    } finally {
+      setSendingSummary(false);
+    }
   };
 
   return (
@@ -384,6 +428,18 @@ function DashboardPage({
               ))}
             </ul>
           )}
+        </div>
+
+        <div className="summary-panel">
+          <button
+            type="button"
+            className="primary-button logout-button"
+            onClick={handleSendSummary}
+            disabled={sendingSummary}
+          >
+            {sendingSummary ? "Enviando resumen..." : "Enviar resumen por email"}
+          </button>
+          {summaryStatus ? <p className="summary-status">{summaryStatus}</p> : null}
         </div>
 
         <button type="button" className="primary-button logout-button" onClick={onLogout}>

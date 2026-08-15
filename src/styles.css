@@ -256,8 +256,25 @@ input {
   background: #b42318;
 }
 
+.small-button:disabled,
+.primary-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .empty-state {
   color: #475467;
+}
+
+.summary-panel {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.summary-status {
+  color: #0f6d6f;
+  font-weight: 600;
 }
 
 .logout-button {

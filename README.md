@@ -4,7 +4,7 @@ Aplicacion SPA para gestion de tareas por usuario, construida por etapas con dep
 
 ## Estado actual
 
-Etapa activa: **D (gestion completa de tareas)**.
+Etapa activa: **E (resumen por email con SES)**.
 
 Hoy el proyecto incluye:
 
@@ -13,13 +13,15 @@ Hoy el proyecto incluye:
 - Login con email/password y Google demo.
 - Rutas protegidas con dashboard.
 - Crear, listar, editar, completar y eliminar tareas por usuario.
+- Function serverless para enviar resumen de tareas por AWS SES.
+- Trigger de resumen por email desde el dashboard.
 - Plan operativo y tracker en la carpeta `plan/`.
 
 Todavia no esta implementado en esta etapa:
 
 - Integracion real con Firebase Auth.
 - Persistencia real en Firestore.
-- Envio de emails con AWS SES.
+- Hardening final de la suite y del despliegue.
 
 ## Estructura del repositorio
 
