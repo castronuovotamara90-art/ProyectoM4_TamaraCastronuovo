@@ -99,7 +99,9 @@ El proyecto usa `vercel.json` con:
 - `buildCommand`: `npm run build`
 - `outputDirectory`: `dist`
 
-La URL publica se agregara una vez realizado el primer deploy de la Etapa A.
+URL pública:
+
+- https://proyecto-m4-tamara-castronuovo.vercel.app/login
 
 ## Plan por etapas
 

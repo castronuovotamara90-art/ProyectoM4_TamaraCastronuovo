@@ -1,3 +1,4 @@
+import { CircleDashed, CircleCheckBig, Inbox, ListChecks } from "lucide-react";
 import type { Task } from "./types";
 import TaskCard from "./TaskCard";
 
@@ -14,12 +15,22 @@ export function StatusPanel({ tasks, onUpdateTask, onToggleComplete, onDelete }:
 
   return (
     <div className="panel-card">
-      <h2>Estado de las tareas</h2>
+      <h2 className="icon-label">
+        <ListChecks size={19} />
+        Estado de las tareas
+      </h2>
+      <p className="panel-hint">Revisa qué está pendiente y qué ya terminaste.</p>
 
       <div className="status-section">
-        <p className="status-heading">Pendientes ({pendingTasks.length})</p>
+        <p className="status-heading">
+          <CircleDashed size={16} />
+          Pendientes <span className="count-pill">{pendingTasks.length}</span>
+        </p>
         {pendingTasks.length === 0 ? (
-          <p className="empty-state">No hay tareas pendientes.</p>
+          <p className="empty-state">
+            <Inbox size={15} />
+            No hay tareas pendientes.
+          </p>
         ) : (
           <ul className="task-card-list">
             {pendingTasks.map((task) => (
@@ -36,9 +47,15 @@ export function StatusPanel({ tasks, onUpdateTask, onToggleComplete, onDelete }:
       </div>
 
       <div className="status-section">
-        <p className="status-heading">Completadas ({completedTasks.length})</p>
+        <p className="status-heading">
+          <CircleCheckBig size={16} />
+          Completadas <span className="count-pill">{completedTasks.length}</span>
+        </p>
         {completedTasks.length === 0 ? (
-          <p className="empty-state">Todavía no completaste ninguna tarea.</p>
+          <p className="empty-state">
+            <Inbox size={15} />
+            Todavía no completaste ninguna tarea.
+          </p>
         ) : (
           <ul className="task-card-list">
             {completedTasks.map((task) => (
