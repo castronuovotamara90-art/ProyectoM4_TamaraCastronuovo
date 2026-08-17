@@ -1,83 +1,82 @@
+
 import { FormEvent, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-
-type Session = {
-  email: string;
-  provider: "email" | "google";
-};
-
-type Task = {
-  id: number;
-  title: string;
-  userEmail: string;
-  completed: boolean;
-};
-
+import { Priority, Session, Task } from "./types";
+import CreateTaskPanel from "./CreateTaskPanel";
+import PriorityPanel from "./PriorityPanel";
+import StatusPanel from "./StatusPanel";
+ 
 const DEMO_USER = {
   email: "usuario@demo.com",
-  password: "123456"
+  password: "123456",
 };
-
+ 
+type PanelKey = "crear" | "prioridad" | "estado";
+ 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, title: "Revisar roadmap", userEmail: "usuario@demo.com", completed: false }
+    {
+      id: 1,
+      title: "Revisar roadmap",
+      assignedTo: "Equipo producto",
+      createdBy: "usuario@demo.com",
+      priority: "media",
+      completed: false,
+    },
   ]);
   const [summaryStatus, setSummaryStatus] = useState("");
-
+ 
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+ 
     if (!email.trim() || !password.trim()) {
       setError("Completa email y password para continuar.");
       return;
     }
-
+ 
     if (email.toLowerCase() !== DEMO_USER.email || password !== DEMO_USER.password) {
       setError("Credenciales invalidas. Prueba usuario@demo.com / 123456");
       return;
     }
-
+ 
     setSession({ email: email.trim(), provider: "email" });
     setError("");
   };
-
+ 
   const handleGoogleLogin = () => {
     setSession({ email: "usuario.google@demo.com", provider: "google" });
     setError("");
   };
-
+ 
   const handleLogout = () => {
     setSession(null);
     setEmail("");
     setPassword("");
     setSummaryStatus("");
   };
-
-  const handleAddTask = (title: string) => {
-    const trimmedTitle = title.trim();
-
-    if (!trimmedTitle || !session) {
+ 
+  const handleAddTask = (title: string, assignedTo: string, priority: Priority) => {
+    if (!session) {
       return;
     }
-
+ 
     setTasks((currentTasks) => [
-      { id: Date.now(), title: trimmedTitle, userEmail: session.email, completed: false },
-      ...currentTasks
+      {
+        id: Date.now(),
+        title,
+        assignedTo,
+        createdBy: session.email,
+        priority,
+        completed: false,
+      },
+      ...currentTasks,
     ]);
   };
-
-  const handleUpdateTask = (taskId: number, nextTitle: string) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, title: nextTitle.trim() } : task
-      )
-    );
-  };
-
+ 
   const handleToggleTaskComplete = (taskId: number) => {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
@@ -85,9 +84,20 @@ function App() {
       )
     );
   };
-
+ 
   const handleDeleteTask = (taskId: number) => {
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+  };
+
+  const handleUpdateTask = (taskId: number, title: string) => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      return;
+    }
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => (task.id === taskId ? { ...task, title: trimmedTitle } : task))
+    );
   };
 
   return (
@@ -130,7 +140,7 @@ function App() {
     </Routes>
   );
 }
-
+ 
 type LoginPageProps = {
   email: string;
   password: string;
@@ -141,7 +151,7 @@ type LoginPageProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onGoogleLogin: () => void;
 };
-
+ 
 function LoginPage({
   email,
   password,
@@ -150,25 +160,25 @@ function LoginPage({
   onEmailChange,
   onPasswordChange,
   onSubmit,
-  onGoogleLogin
+  onGoogleLogin,
 }: LoginPageProps) {
   const location = useLocation();
   const navigate = useNavigate();
-
+ 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-
+ 
   const isProtectedAccess = location.state && (location.state as { from?: string }).from === "/dashboard";
-
+ 
   return (
     <main className="auth-shell">
       <section className="auth-card" aria-label="login de usuario">
-        <p className="stage-chip">Etapa B1</p>
+        <p className="stage-chip">Gestor estratégico de tareas</p>
         <h1>Inicia sesión</h1>
         {isProtectedAccess ? <p className="notice">Acceso protegido</p> : null}
         <p className="subtitle">Ingresa tus credenciales para continuar.</p>
-
+ 
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field-group">
             <label htmlFor="email">Email</label>
@@ -182,7 +192,7 @@ function LoginPage({
               autoComplete="email"
             />
           </div>
-
+ 
           <div className="field-group">
             <label htmlFor="password">Password</label>
             <input
@@ -195,26 +205,26 @@ function LoginPage({
               autoComplete="current-password"
             />
           </div>
-
+ 
           {error ? (
             <p className="error-message" aria-live="polite">
               {error}
             </p>
           ) : null}
-
+ 
           <button type="submit" className="primary-button">
             Iniciar sesión
           </button>
         </form>
-
+ 
         <div className="divider">
           <span>o</span>
         </div>
-
+ 
         <button type="button" className="google-button" onClick={onGoogleLogin}>
           Continuar con Google
         </button>
-
+ 
         <p className="demo-credentials">
           Demo: <strong>usuario@demo.com</strong> / <strong>123456</strong>
         </p>
@@ -225,34 +235,34 @@ function LoginPage({
     </main>
   );
 }
-
+ 
 type ProtectedRouteProps = {
   isAuthenticated: boolean;
   children: React.ReactNode;
 };
-
+ 
 function ProtectedRoute({ isAuthenticated, children }: ProtectedRouteProps) {
   const location = useLocation();
-
+ 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
-
+ 
   return <>{children}</>;
 }
-
+ 
 type DashboardPageProps = {
   session: Session | null;
   tasks: Task[];
   summaryStatus: string;
   onSummaryStatusChange: (value: string) => void;
   onLogout: () => void;
-  onAddTask: (title: string) => void;
-  onUpdateTask: (taskId: number, nextTitle: string) => void;
+  onAddTask: (title: string, assignedTo: string, priority: Priority) => void;
+  onUpdateTask: (taskId: number, title: string) => void;
   onToggleTaskComplete: (taskId: number) => void;
   onDeleteTask: (taskId: number) => void;
 };
-
+ 
 function DashboardPage({
   session,
   tasks,
@@ -262,72 +272,38 @@ function DashboardPage({
   onAddTask,
   onUpdateTask,
   onToggleTaskComplete,
-  onDeleteTask
+  onDeleteTask,
 }: DashboardPageProps) {
-  const [taskTitle, setTaskTitle] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
-  const [editingTitle, setEditingTitle] = useState("");
+  const [activePanel, setActivePanel] = useState<PanelKey>("crear");
   const [sendingSummary, setSendingSummary] = useState(false);
-
+ 
   if (!session) {
     return <Navigate to="/login" replace />;
   }
-
-  const userTasks = tasks.filter((task) => task.userEmail === session.email);
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onAddTask(taskTitle);
-    setTaskTitle("");
-  };
-
-  const handleEditTask = (task: Task) => {
-    setEditingTaskId(task.id);
-    setEditingTitle(task.title);
-  };
-
-  const handleSaveTask = () => {
-    if (editingTaskId === null) {
-      return;
-    }
-
-    const trimmedTitle = editingTitle.trim();
-    if (!trimmedTitle) {
-      return;
-    }
-
-    onUpdateTask(editingTaskId, trimmedTitle);
-    setEditingTaskId(null);
-    setEditingTitle("");
-  };
-
+ 
   const handleSendSummary = async () => {
-    if (!session) {
-      return;
-    }
-
     setSendingSummary(true);
     onSummaryStatusChange("");
-
+ 
     try {
       const response = await fetch("/api/send-summary", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userEmail: session.email,
-          tasks: userTasks.map((task) => ({
+          tasks: tasks.map((task) => ({
             title: task.title,
-            completed: task.completed
-          }))
-        })
+            assignedTo: task.assignedTo,
+            priority: task.priority,
+            completed: task.completed,
+          })),
+        }),
       });
-
+ 
       if (!response.ok) {
         throw new Error("No se pudo enviar el resumen.");
       }
-
+ 
       onSummaryStatusChange("Resumen enviado");
     } catch {
       onSummaryStatusChange("No se pudo enviar el resumen");
@@ -335,105 +311,75 @@ function DashboardPage({
       setSendingSummary(false);
     }
   };
-
+ 
   return (
     <main className="dashboard-shell">
       <section className="dashboard-card" aria-label="panel principal">
-        <p className="stage-chip">Sesión activa</p>
-        <h1>Panel principal</h1>
-        <p className="user-email">{session.email}</p>
-        <p className="provider-tag">{session.provider === "google" ? "Google" : "Email"}</p>
-        <p className="dashboard-copy">
-          Has ingresado correctamente a la gestion de tareas.
-        </p>
-
-        <form onSubmit={handleSubmit} className="task-form">
-          <div className="field-group">
-            <label htmlFor="taskTitle">Titulo de la tarea</label>
-            <input
-              id="taskTitle"
-              type="text"
-              value={taskTitle}
-              onChange={(event) => setTaskTitle(event.target.value)}
-              placeholder="Escribe una tarea"
-            />
+        <div className="dashboard-header">
+          <div>
+            <p className="stage-chip">Sesión activa</p>
+            <h1>Panel principal</h1>
+            <p className="user-email">{session.email}</p>
           </div>
-
-          <button type="submit" className="primary-button">
-            Agregar tarea
+          <button type="button" className="secondary-button logout-button" onClick={onLogout}>
+            Cerrar sesión
           </button>
-        </form>
-
-        <div className="task-list" aria-live="polite">
-          <h2>Tareas del usuario</h2>
-          {userTasks.length === 0 ? (
-            <p className="empty-state">Todavia no hay tareas para este usuario.</p>
-          ) : (
-            <ul>
-              {userTasks.map((task) => (
-                <li key={task.id} className={task.completed ? "task-item complete" : "task-item"}>
-                  {editingTaskId === task.id ? (
-                    <>
-                      <input
-                        aria-label={`Editar tarea ${task.title}`}
-                        value={editingTitle}
-                        onChange={(event) => setEditingTitle(event.target.value)}
-                      />
-                      <div className="task-actions">
-                        <button type="button" className="small-button" onClick={handleSaveTask}>
-                          Guardar cambios
-                        </button>
-                        <button
-                          type="button"
-                          className="small-button secondary"
-                          onClick={() => {
-                            setEditingTaskId(null);
-                            setEditingTitle("");
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="task-main">
-                        <span className={task.completed ? "task-title completed" : "task-title"}>
-                          {task.title}
-                        </span>
-                        <span className="task-status">{task.completed ? "Completada" : "Pendiente"}</span>
-                      </div>
-                      <div className="task-actions">
-                        <button type="button" className="small-button" onClick={() => handleEditTask(task)}>
-                          Editar tarea
-                        </button>
-                        <button
-                          type="button"
-                          className="small-button"
-                          onClick={() => onToggleTaskComplete(task.id)}
-                        >
-                          {task.completed ? "Marcar como pendiente" : "Marcar como completada"}
-                        </button>
-                        <button
-                          type="button"
-                          className="small-button danger"
-                          onClick={() => onDeleteTask(task.id)}
-                        >
-                          Eliminar tarea
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-
+ 
+        <nav className="panel-tabs" aria-label="Paneles de gestión de tareas">
+          <button
+            type="button"
+            className={activePanel === "crear" ? "tab-button active" : "tab-button"}
+            onClick={() => setActivePanel("crear")}
+          >
+            Nueva tarea
+          </button>
+          <button
+            type="button"
+            className={activePanel === "prioridad" ? "tab-button active" : "tab-button"}
+            onClick={() => setActivePanel("prioridad")}
+          >
+            Por prioridad
+          </button>
+          <button
+            type="button"
+            className={activePanel === "estado" ? "tab-button active" : "tab-button"}
+            onClick={() => setActivePanel("estado")}
+          >
+            Estado
+          </button>
+        </nav>
+ 
+        {activePanel === "crear" ? (
+          <CreateTaskPanel
+            tasks={tasks}
+            onAddTask={onAddTask}
+            onUpdateTask={onUpdateTask}
+            onToggleComplete={onToggleTaskComplete}
+            onDelete={onDeleteTask}
+          />
+        ) : null}
+        {activePanel === "prioridad" ? (
+          <PriorityPanel
+            tasks={tasks}
+            onUpdateTask={onUpdateTask}
+            onToggleComplete={onToggleTaskComplete}
+            onDelete={onDeleteTask}
+          />
+        ) : null}
+        {activePanel === "estado" ? (
+          <StatusPanel
+            tasks={tasks}
+            onUpdateTask={onUpdateTask}
+            onToggleComplete={onToggleTaskComplete}
+            onDelete={onDeleteTask}
+          />
+        ) : null}
+ 
         <div className="summary-panel">
           <button
             type="button"
-            className="primary-button logout-button"
+            className="primary-button"
             onClick={handleSendSummary}
             disabled={sendingSummary}
           >
@@ -441,13 +387,9 @@ function DashboardPage({
           </button>
           {summaryStatus ? <p className="summary-status">{summaryStatus}</p> : null}
         </div>
-
-        <button type="button" className="primary-button logout-button" onClick={onLogout}>
-          Cerrar sesión
-        </button>
       </section>
     </main>
   );
 }
-
+ 
 export default App;
