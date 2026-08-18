@@ -4,9 +4,9 @@ import { Task, PRIORITY_LABELS } from "./types";
 
 type TaskCardProps = {
   task: Task;
-  onUpdateTask: (taskId: number, title: string) => void;
-  onToggleComplete: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
+  onUpdateTask: (taskId: string, title: string) => void;
+  onToggleComplete: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 };
 
 function TaskCard({ task, onUpdateTask, onToggleComplete, onDelete }: TaskCardProps) {

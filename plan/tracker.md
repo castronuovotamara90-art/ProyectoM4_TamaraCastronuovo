@@ -17,26 +17,27 @@ Ultima actualizacion: 2026-08-18
 - [x] Manejo claro de errores de autenticacion
 
 ### Gestion de tareas (usuario autenticado)
-- [] Crear tarea (titulo + descripcion)
-- [] Listar tareas del usuario
-- [] Editar tarea
-- [] Eliminar tarea
-- [] Marcar tarea como completada
-- [] Persistencia en Firestore
-- [] Cada usuario solo ve sus propias tareas
+- [x] Crear tarea (titulo + descripcion)
+- [x] Listar tareas del usuario
+- [x] Editar tarea
+- [x] Eliminar tarea
+- [x] Marcar tarea como completada
+- [x] Persistencia en Firestore
+- [x] Cada usuario solo ve sus propias tareas
 
 ### Persistencia y sincronizacion
-- [] Datos almacenados en Cloud Firestore
-- [] Filtrado por userId
-- [] Manejo de estados de carga (loading)
-- [] Manejo de errores
-- [] Actualizacion automatica de la UI tras operaciones CRUD
+- [x] Datos almacenados en Cloud Firestore
+- [x] Filtrado por userId
+- [x] Manejo de estados de carga (loading)
+- [x] Manejo de errores
+- [x] Actualizacion automatica de la UI tras operaciones CRUD
 
 ### Email
-- [] Boton para enviar email con resumen del estado de todas las tareas
-- [] Funcion de envio usando AWS SES
+- [] Boton para enviar email con resumen del estado de todas las tareas. El email tiene que ser enviado al email del usuario autenticado. 
+- [] Funcion de envio usando AWS SES. Validar que la cuenta de AWS SES en el archivo .env sirva para esto.
 - [] Email de confirmacion de envio
 - [] Sin secretos expuestos en el frontend
+
 
 ### Testing
 - [] Tests unitarios de funciones clave

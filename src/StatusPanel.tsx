@@ -4,9 +4,9 @@ import TaskCard from "./TaskCard";
 
 type StatusPanelProps = {
   tasks: Task[];
-  onUpdateTask: (taskId: number, title: string) => void;
-  onToggleComplete: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
+  onUpdateTask: (taskId: string, title: string) => void;
+  onToggleComplete: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 };
 
 export function StatusPanel({ tasks, onUpdateTask, onToggleComplete, onDelete }: StatusPanelProps) {

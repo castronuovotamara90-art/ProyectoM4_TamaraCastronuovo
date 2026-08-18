@@ -1,4 +1,5 @@
 import type { User } from "firebase/auth";
+import type { Timestamp } from "firebase/firestore";
 
 export type Priority = "alta" | "media" | "baja";
 
@@ -17,12 +18,14 @@ export function toSession(user: User): Session {
 }
 
 export type Task = {
-  id: number;
+  id: string;
+  userId: string;
   title: string;
   assignedTo: string;
   createdBy: string;
   priority: Priority;
   completed: boolean;
+  createdAt?: Timestamp | null;
 };
 
 export const PRIORITY_LABELS: Record<Priority, string> = {

@@ -30,7 +30,7 @@ describe("Etapa D - gestion de tareas", () => {
 
     const completeButtons = screen.getAllByRole("button", { name: /marcar como completada/i });
     await user.click(completeButtons[0]);
-    expect(screen.getAllByText(/completada/i).length).toBeGreaterThan(0);
+    expect(await screen.findByRole("button", { name: /marcar como pendiente/i })).toBeInTheDocument();
 
     const deleteButtons = screen.getAllByRole("button", { name: /eliminar tarea/i });
     await user.click(deleteButtons[0]);

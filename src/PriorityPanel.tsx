@@ -5,9 +5,9 @@ import TaskCard from "./TaskCard";
 
 type PriorityPanelProps = {
   tasks: Task[];
-  onUpdateTask: (taskId: number, title: string) => void;
-  onToggleComplete: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
+  onUpdateTask: (taskId: string, title: string) => void;
+  onToggleComplete: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 };
 
 export function PriorityPanel({ tasks, onUpdateTask, onToggleComplete, onDelete }: PriorityPanelProps) {

@@ -6,9 +6,9 @@ import TaskCard from "./TaskCard";
 type CreateTaskPanelProps = {
   tasks: Task[];
   onAddTask: (title: string, assignedTo: string, priority: Priority) => void;
-  onUpdateTask: (taskId: number, title: string) => void;
-  onToggleComplete: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
+  onUpdateTask: (taskId: string, title: string) => void;
+  onToggleComplete: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 };
 
 export function CreateTaskPanel({

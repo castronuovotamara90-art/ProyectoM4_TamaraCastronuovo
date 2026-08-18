@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Priority, Task, toSession } from "./types";
 import { useAuth } from "./hooks/useAuth";
+import { useTasks } from "./hooks/useTasks";
 import { logout, signIn, signInWithGoogle, signUp } from "./services/authService";
 import CreateTaskPanel from "./CreateTaskPanel";
 import PriorityPanel from "./PriorityPanel";
@@ -29,22 +30,21 @@ type AuthMode = "login" | "register";
 function App() {
   const { user, loading: authLoading } = useAuth();
   const session = user ? toSession(user) : null;
+  const {
+    tasks,
+    loading: tasksLoading,
+    error: tasksError,
+    addTask,
+    updateTask,
+    toggleComplete,
+    deleteTask,
+  } = useTasks(user?.uid ?? null, session?.email ?? null);
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 1,
-      title: "Revisar roadmap",
-      assignedTo: "Equipo producto",
-      createdBy: "usuario@demo.com",
-      priority: "media",
-      completed: false,
-    },
-  ]);
   const [summaryStatus, setSummaryStatus] = useState("");
 
   const resetAuthForm = () => {
@@ -103,40 +103,19 @@ function App() {
       return;
     }
 
-    setTasks((currentTasks) => [
-      {
-        id: Date.now(),
-        title,
-        assignedTo,
-        createdBy: session.email,
-        priority,
-        completed: false,
-      },
-      ...currentTasks,
-    ]);
+    void addTask(title, assignedTo, priority);
   };
 
-  const handleToggleTaskComplete = (taskId: number) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const handleToggleTaskComplete = (taskId: string) => {
+    void toggleComplete(taskId);
   };
 
-  const handleDeleteTask = (taskId: number) => {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+  const handleDeleteTask = (taskId: string) => {
+    void deleteTask(taskId);
   };
 
-  const handleUpdateTask = (taskId: number, title: string) => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      return;
-    }
-
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === taskId ? { ...task, title: trimmedTitle } : task))
-    );
+  const handleUpdateTask = (taskId: string, title: string) => {
+    void updateTask(taskId, title);
   };
 
   if (authLoading) {
@@ -174,6 +153,8 @@ function App() {
             <DashboardPage
               session={session}
               tasks={tasks}
+              tasksLoading={tasksLoading}
+              tasksError={tasksError}
               summaryStatus={summaryStatus}
               onSummaryStatusChange={setSummaryStatus}
               onLogout={handleLogout}
@@ -334,18 +315,22 @@ function ProtectedRoute({ isAuthenticated, children }: ProtectedRouteProps) {
 type DashboardPageProps = {
   session: { email: string; provider: "email" | "google" } | null;
   tasks: Task[];
+  tasksLoading: boolean;
+  tasksError: string;
   summaryStatus: string;
   onSummaryStatusChange: (value: string) => void;
   onLogout: () => void;
   onAddTask: (title: string, assignedTo: string, priority: Priority) => void;
-  onUpdateTask: (taskId: number, title: string) => void;
-  onToggleTaskComplete: (taskId: number) => void;
-  onDeleteTask: (taskId: number) => void;
+  onUpdateTask: (taskId: string, title: string) => void;
+  onToggleTaskComplete: (taskId: string) => void;
+  onDeleteTask: (taskId: string) => void;
 };
 
 function DashboardPage({
   session,
   tasks,
+  tasksLoading,
+  tasksError,
   summaryStatus,
   onSummaryStatusChange,
   onLogout,
@@ -440,31 +425,44 @@ function DashboardPage({
           </button>
         </nav>
 
-        {activePanel === "crear" ? (
-          <CreateTaskPanel
-            tasks={tasks}
-            onAddTask={onAddTask}
-            onUpdateTask={onUpdateTask}
-            onToggleComplete={onToggleTaskComplete}
-            onDelete={onDeleteTask}
-          />
+        {tasksError ? (
+          <p className="error-message" aria-live="polite">
+            <AlertCircle size={16} />
+            {tasksError}
+          </p>
         ) : null}
-        {activePanel === "prioridad" ? (
-          <PriorityPanel
-            tasks={tasks}
-            onUpdateTask={onUpdateTask}
-            onToggleComplete={onToggleTaskComplete}
-            onDelete={onDeleteTask}
-          />
-        ) : null}
-        {activePanel === "estado" ? (
-          <StatusPanel
-            tasks={tasks}
-            onUpdateTask={onUpdateTask}
-            onToggleComplete={onToggleTaskComplete}
-            onDelete={onDeleteTask}
-          />
-        ) : null}
+
+        {tasksLoading ? (
+          <p className="notice">Cargando tareas...</p>
+        ) : (
+          <>
+            {activePanel === "crear" ? (
+              <CreateTaskPanel
+                tasks={tasks}
+                onAddTask={onAddTask}
+                onUpdateTask={onUpdateTask}
+                onToggleComplete={onToggleTaskComplete}
+                onDelete={onDeleteTask}
+              />
+            ) : null}
+            {activePanel === "prioridad" ? (
+              <PriorityPanel
+                tasks={tasks}
+                onUpdateTask={onUpdateTask}
+                onToggleComplete={onToggleTaskComplete}
+                onDelete={onDeleteTask}
+              />
+            ) : null}
+            {activePanel === "estado" ? (
+              <StatusPanel
+                tasks={tasks}
+                onUpdateTask={onUpdateTask}
+                onToggleComplete={onToggleTaskComplete}
+                onDelete={onDeleteTask}
+              />
+            ) : null}
+          </>
+        )}
 
         <div className="summary-panel">
           <button
