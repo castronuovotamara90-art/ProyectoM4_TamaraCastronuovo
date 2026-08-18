@@ -1,6 +1,20 @@
-
 import { FormEvent, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import {
+  AlertCircle,
+  ArrowRight,
+  BarChart3,
+  Chrome,
+  ListChecks,
+  ListTodo,
+  Lock,
+  LogOut,
+  Mail,
+  Mails,
+  Send,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { Priority, Session, Task } from "./types";
 import CreateTaskPanel from "./CreateTaskPanel";
 import PriorityPanel from "./PriorityPanel";
@@ -174,14 +188,25 @@ function LoginPage({
   return (
     <main className="auth-shell">
       <section className="auth-card" aria-label="login de usuario">
-        <p className="stage-chip">Gestor estratégico de tareas</p>
+        <p className="stage-chip">
+          <ListChecks size={14} strokeWidth={2.5} />
+          Gestor estratégico de tareas
+        </p>
         <h1>Inicia sesión</h1>
-        {isProtectedAccess ? <p className="notice">Acceso protegido</p> : null}
+        {isProtectedAccess ? (
+          <p className="notice icon-label">
+            <ShieldCheck size={16} />
+            Acceso protegido
+          </p>
+        ) : null}
         <p className="subtitle">Ingresa tus credenciales para continuar.</p>
  
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email" className="icon-label">
+              <Mail size={15} />
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -194,7 +219,10 @@ function LoginPage({
           </div>
  
           <div className="field-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password" className="icon-label">
+              <Lock size={15} />
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -208,12 +236,14 @@ function LoginPage({
  
           {error ? (
             <p className="error-message" aria-live="polite">
+              <AlertCircle size={16} />
               {error}
             </p>
           ) : null}
  
           <button type="submit" className="primary-button">
             Iniciar sesión
+            <ArrowRight size={16} />
           </button>
         </form>
  
@@ -222,10 +252,12 @@ function LoginPage({
         </div>
  
         <button type="button" className="google-button" onClick={onGoogleLogin}>
+          <Chrome size={17} />
           Continuar con Google
         </button>
  
         <p className="demo-credentials">
+          <ShieldCheck size={14} />
           Demo: <strong>usuario@demo.com</strong> / <strong>123456</strong>
         </p>
         <button type="button" className="secondary-button" onClick={() => navigate("/dashboard")}>
@@ -317,11 +349,18 @@ function DashboardPage({
       <section className="dashboard-card" aria-label="panel principal">
         <div className="dashboard-header">
           <div>
-            <p className="stage-chip">Sesión activa</p>
+            <p className="stage-chip">
+              <ShieldCheck size={14} strokeWidth={2.5} />
+              Sesión activa
+            </p>
             <h1>Panel principal</h1>
-            <p className="user-email">{session.email}</p>
+            <p className="user-email">
+              <User size={14} />
+              {session.email}
+            </p>
           </div>
           <button type="button" className="secondary-button logout-button" onClick={onLogout}>
+            <LogOut size={16} />
             Cerrar sesión
           </button>
         </div>
@@ -332,6 +371,7 @@ function DashboardPage({
             className={activePanel === "crear" ? "tab-button active" : "tab-button"}
             onClick={() => setActivePanel("crear")}
           >
+            <ListTodo size={16} />
             Nueva tarea
           </button>
           <button
@@ -339,6 +379,7 @@ function DashboardPage({
             className={activePanel === "prioridad" ? "tab-button active" : "tab-button"}
             onClick={() => setActivePanel("prioridad")}
           >
+            <BarChart3 size={16} />
             Por prioridad
           </button>
           <button
@@ -346,6 +387,7 @@ function DashboardPage({
             className={activePanel === "estado" ? "tab-button active" : "tab-button"}
             onClick={() => setActivePanel("estado")}
           >
+            <ListChecks size={16} />
             Estado
           </button>
         </nav>
@@ -383,9 +425,15 @@ function DashboardPage({
             onClick={handleSendSummary}
             disabled={sendingSummary}
           >
+            {sendingSummary ? <Mails size={16} /> : <Send size={16} />}
             {sendingSummary ? "Enviando resumen..." : "Enviar resumen por email"}
           </button>
-          {summaryStatus ? <p className="summary-status">{summaryStatus}</p> : null}
+          {summaryStatus ? (
+            <p className="summary-status">
+              <ShieldCheck size={15} />
+              {summaryStatus}
+            </p>
+          ) : null}
         </div>
       </section>
     </main>

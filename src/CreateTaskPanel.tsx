@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { AlertCircle, ClipboardList, ListPlus, PlusCircle, User, Flag, Inbox } from "lucide-react";
 import type { Priority, Task } from "./types";
 import TaskCard from "./TaskCard";
 
@@ -42,10 +43,17 @@ export function CreateTaskPanel({
   return (
     <div className="panel-card">
       <form onSubmit={handleSubmit} className="task-form">
-        <h2>Nueva tarea</h2>
+        <h2 className="icon-label">
+          <ListPlus size={19} />
+          Nueva tarea
+        </h2>
+        <p className="panel-hint">Completa el título y, si quieres, asigna un responsable y una prioridad.</p>
 
         <div className="field-group">
-          <label htmlFor="taskTitle">Titulo de la tarea</label>
+          <label htmlFor="taskTitle" className="icon-label">
+            <ClipboardList size={15} />
+            Titulo de la tarea
+          </label>
           <input
             id="taskTitle"
             type="text"
@@ -57,7 +65,10 @@ export function CreateTaskPanel({
 
         <div className="field-row">
           <div className="field-group">
-            <label htmlFor="assignedTo">Asignar a</label>
+            <label htmlFor="assignedTo" className="icon-label">
+              <User size={15} />
+              Asignar a
+            </label>
             <input
               id="assignedTo"
               type="text"
@@ -68,7 +79,10 @@ export function CreateTaskPanel({
           </div>
 
           <div className="field-group">
-            <label htmlFor="priority">Prioridad</label>
+            <label htmlFor="priority" className="icon-label">
+              <Flag size={15} />
+              Prioridad
+            </label>
             <select
               id="priority"
               value={priority}
@@ -83,18 +97,23 @@ export function CreateTaskPanel({
 
         {formError ? (
           <p className="error-message" aria-live="polite">
+            <AlertCircle size={16} />
             {formError}
           </p>
         ) : null}
 
         <button type="submit" className="primary-button" aria-label="Agregar tarea">
+          <PlusCircle size={17} />
           Agregar tarea
         </button>
       </form>
 
       {tasks.length > 0 ? (
         <div className="task-list-block">
-          <h3>Tareas recientes</h3>
+          <h3>
+            <ClipboardList size={16} />
+            Tareas recientes
+          </h3>
           <ul className="task-card-list">
             {tasks.map((task) => (
               <TaskCard
@@ -107,7 +126,12 @@ export function CreateTaskPanel({
             ))}
           </ul>
         </div>
-      ) : null}
+      ) : (
+        <p className="empty-state" style={{ marginTop: "1.25rem" }}>
+          <Inbox size={16} />
+          Todavía no hay tareas. Crea la primera arriba.
+        </p>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check, Flag, Pencil, RotateCcw, Save, Trash2, User } from "lucide-react";
 import { Task, PRIORITY_LABELS } from "./types";
 
 type TaskCardProps = {
@@ -21,16 +22,18 @@ function TaskCard({ task, onUpdateTask, onToggleComplete, onDelete }: TaskCardPr
     <li className={`task-card priority-${task.priority}${task.completed ? " completed" : ""}`}>
       <div className="task-card-main">
         {isEditing ? (
-          <>
+          <div className="task-edit-row">
             <input
               aria-label={`Editar tarea ${task.title}`}
               value={draftTitle}
               onChange={(event) => setDraftTitle(event.target.value)}
+              autoFocus
             />
-            <button type="button" onClick={handleSave} aria-label="Guardar cambios">
+            <button type="button" className="task-save" onClick={handleSave} aria-label="Guardar cambios">
+              <Save size={14} />
               Guardar cambios
             </button>
-          </>
+          </div>
         ) : (
           <>
             <label className="task-checkbox">
@@ -51,6 +54,7 @@ function TaskCard({ task, onUpdateTask, onToggleComplete, onDelete }: TaskCardPr
               }}
               aria-label="Editar tarea"
             >
+              <Pencil size={13} />
               Editar tarea
             </button>
             <button
@@ -59,6 +63,7 @@ function TaskCard({ task, onUpdateTask, onToggleComplete, onDelete }: TaskCardPr
               onClick={() => onToggleComplete(task.id)}
               aria-label={task.completed ? "Marcar como pendiente" : "Marcar como completada"}
             >
+              {task.completed ? <RotateCcw size={13} /> : <Check size={13} />}
               {task.completed ? "Marcar como pendiente" : "Marcar como completada"}
             </button>
           </>
@@ -69,12 +74,17 @@ function TaskCard({ task, onUpdateTask, onToggleComplete, onDelete }: TaskCardPr
           onClick={() => onDelete(task.id)}
           aria-label={`Eliminar tarea ${task.title}`}
         >
+          <Trash2 size={13} />
           Eliminar
         </button>
       </div>
       <div className="task-card-meta">
-        <span className="task-assignee">Asignada a: {task.assignedTo}</span>
+        <span className="task-assignee">
+          <User size={13} />
+          Asignada a: {task.assignedTo}
+        </span>
         <span className={`priority-badge priority-badge-${task.priority}`}>
+          <Flag size={12} />
           {PRIORITY_LABELS[task.priority]}
         </span>
       </div>
