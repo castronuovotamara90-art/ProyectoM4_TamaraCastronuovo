@@ -14,24 +14,27 @@ import {
   Send,
   ShieldCheck,
   User,
+  UserPlus,
 } from "lucide-react";
-import { Priority, Session, Task } from "./types";
+import { Priority, Task, toSession } from "./types";
+import { useAuth } from "./hooks/useAuth";
+import { logout, signIn, signInWithGoogle, signUp } from "./services/authService";
 import CreateTaskPanel from "./CreateTaskPanel";
 import PriorityPanel from "./PriorityPanel";
 import StatusPanel from "./StatusPanel";
- 
-const DEMO_USER = {
-  email: "usuario@demo.com",
-  password: "123456",
-};
- 
+
 type PanelKey = "crear" | "prioridad" | "estado";
- 
+type AuthMode = "login" | "register";
+
 function App() {
-  const [session, setSession] = useState<Session | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const session = user ? toSession(user) : null;
+
+  const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
@@ -43,41 +46,63 @@ function App() {
     },
   ]);
   const [summaryStatus, setSummaryStatus] = useState("");
- 
-  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+
+  const resetAuthForm = () => {
+    setEmail("");
+    setPassword("");
+    setError("");
+  };
+
+  const handleToggleMode = () => {
+    setMode((currentMode) => (currentMode === "login" ? "register" : "login"));
+    setError("");
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
- 
+
     if (!email.trim() || !password.trim()) {
       setError("Completa email y password para continuar.");
       return;
     }
- 
-    if (email.toLowerCase() !== DEMO_USER.email || password !== DEMO_USER.password) {
-      setError("Credenciales invalidas. Prueba usuario@demo.com / 123456");
-      return;
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      if (mode === "register") {
+        await signUp(email.trim(), password);
+      } else {
+        await signIn(email.trim(), password);
+      }
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Ocurrio un error. Intenta nuevamente.");
+    } finally {
+      setIsSubmitting(false);
     }
- 
-    setSession({ email: email.trim(), provider: "email" });
-    setError("");
   };
- 
-  const handleGoogleLogin = () => {
-    setSession({ email: "usuario.google@demo.com", provider: "google" });
+
+  const handleGoogleLogin = async () => {
     setError("");
+
+    try {
+      await signInWithGoogle();
+    } catch (googleError) {
+      setError(googleError instanceof Error ? googleError.message : "Ocurrio un error. Intenta nuevamente.");
+    }
   };
- 
-  const handleLogout = () => {
-    setSession(null);
-    setEmail("");
-    setPassword("");
+
+  const handleLogout = async () => {
+    await logout();
+    resetAuthForm();
     setSummaryStatus("");
   };
- 
+
   const handleAddTask = (title: string, assignedTo: string, priority: Priority) => {
     if (!session) {
       return;
     }
- 
+
     setTasks((currentTasks) => [
       {
         id: Date.now(),
@@ -90,7 +115,7 @@ function App() {
       ...currentTasks,
     ]);
   };
- 
+
   const handleToggleTaskComplete = (taskId: number) => {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
@@ -98,7 +123,7 @@ function App() {
       )
     );
   };
- 
+
   const handleDeleteTask = (taskId: number) => {
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
   };
@@ -114,19 +139,30 @@ function App() {
     );
   };
 
+  if (authLoading) {
+    return (
+      <main className="auth-shell">
+        <p className="notice">Cargando sesion...</p>
+      </main>
+    );
+  }
+
   return (
     <Routes>
       <Route
         path="/login"
         element={
           <LoginPage
+            mode={mode}
             email={email}
             password={password}
             error={error}
+            isSubmitting={isSubmitting}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
-            onSubmit={handleLogin}
+            onSubmit={handleSubmit}
             onGoogleLogin={handleGoogleLogin}
+            onToggleMode={handleToggleMode}
             isAuthenticated={Boolean(session)}
           />
         }
@@ -154,53 +190,64 @@ function App() {
     </Routes>
   );
 }
- 
+
 type LoginPageProps = {
+  mode: AuthMode;
   email: string;
   password: string;
   error: string;
+  isSubmitting: boolean;
   isAuthenticated: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onGoogleLogin: () => void;
+  onToggleMode: () => void;
 };
- 
+
 function LoginPage({
+  mode,
   email,
   password,
   error,
+  isSubmitting,
   isAuthenticated,
   onEmailChange,
   onPasswordChange,
   onSubmit,
   onGoogleLogin,
+  onToggleMode,
 }: LoginPageProps) {
   const location = useLocation();
   const navigate = useNavigate();
- 
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
- 
+
   const isProtectedAccess = location.state && (location.state as { from?: string }).from === "/dashboard";
- 
+  const isRegister = mode === "register";
+
   return (
     <main className="auth-shell">
-      <section className="auth-card" aria-label="login de usuario">
+      <section className="auth-card" aria-label={isRegister ? "registro de usuario" : "login de usuario"}>
         <p className="stage-chip">
           <ListChecks size={14} strokeWidth={2.5} />
           Gestor estratégico de tareas
         </p>
-        <h1>Inicia sesión</h1>
+        <h1>{isRegister ? "Crea tu cuenta" : "Inicia sesión"}</h1>
         {isProtectedAccess ? (
           <p className="notice icon-label">
             <ShieldCheck size={16} />
             Acceso protegido
           </p>
         ) : null}
-        <p className="subtitle">Ingresa tus credenciales para continuar.</p>
- 
+        <p className="subtitle">
+          {isRegister
+            ? "Registra un email y password para crear tu cuenta."
+            : "Ingresa tus credenciales para continuar."}
+        </p>
+
         <form onSubmit={onSubmit} className="auth-form">
           <div className="field-group">
             <label htmlFor="email" className="icon-label">
@@ -217,7 +264,7 @@ function LoginPage({
               autoComplete="email"
             />
           </div>
- 
+
           <div className="field-group">
             <label htmlFor="password" className="icon-label">
               <Lock size={15} />
@@ -230,36 +277,37 @@ function LoginPage({
               value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
               placeholder="••••••"
-              autoComplete="current-password"
+              autoComplete={isRegister ? "new-password" : "current-password"}
             />
           </div>
- 
+
           {error ? (
             <p className="error-message" aria-live="polite">
               <AlertCircle size={16} />
               {error}
             </p>
           ) : null}
- 
-          <button type="submit" className="primary-button">
-            Iniciar sesión
+
+          <button type="submit" className="primary-button" disabled={isSubmitting}>
+            {isRegister ? "Crear cuenta" : "Iniciar sesión"}
             <ArrowRight size={16} />
           </button>
         </form>
- 
+
         <div className="divider">
           <span>o</span>
         </div>
- 
+
         <button type="button" className="google-button" onClick={onGoogleLogin}>
           <Chrome size={17} />
           Continuar con Google
         </button>
- 
-        <p className="demo-credentials">
-          <ShieldCheck size={14} />
-          Demo: <strong>usuario@demo.com</strong> / <strong>123456</strong>
-        </p>
+
+        <button type="button" className="secondary-button" onClick={onToggleMode}>
+          <UserPlus size={16} />
+          {isRegister ? "Ya tengo cuenta, iniciar sesión" : "No tengo cuenta, registrarme"}
+        </button>
+
         <button type="button" className="secondary-button" onClick={() => navigate("/dashboard")}>
           Ir al dashboard
         </button>
@@ -267,24 +315,24 @@ function LoginPage({
     </main>
   );
 }
- 
+
 type ProtectedRouteProps = {
   isAuthenticated: boolean;
   children: React.ReactNode;
 };
- 
+
 function ProtectedRoute({ isAuthenticated, children }: ProtectedRouteProps) {
   const location = useLocation();
- 
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
- 
+
   return <>{children}</>;
 }
- 
+
 type DashboardPageProps = {
-  session: Session | null;
+  session: { email: string; provider: "email" | "google" } | null;
   tasks: Task[];
   summaryStatus: string;
   onSummaryStatusChange: (value: string) => void;
@@ -294,7 +342,7 @@ type DashboardPageProps = {
   onToggleTaskComplete: (taskId: number) => void;
   onDeleteTask: (taskId: number) => void;
 };
- 
+
 function DashboardPage({
   session,
   tasks,
@@ -308,15 +356,15 @@ function DashboardPage({
 }: DashboardPageProps) {
   const [activePanel, setActivePanel] = useState<PanelKey>("crear");
   const [sendingSummary, setSendingSummary] = useState(false);
- 
+
   if (!session) {
     return <Navigate to="/login" replace />;
   }
- 
+
   const handleSendSummary = async () => {
     setSendingSummary(true);
     onSummaryStatusChange("");
- 
+
     try {
       const response = await fetch("/api/send-summary", {
         method: "POST",
@@ -331,11 +379,11 @@ function DashboardPage({
           })),
         }),
       });
- 
+
       if (!response.ok) {
         throw new Error("No se pudo enviar el resumen.");
       }
- 
+
       onSummaryStatusChange("Resumen enviado");
     } catch {
       onSummaryStatusChange("No se pudo enviar el resumen");
@@ -343,7 +391,7 @@ function DashboardPage({
       setSendingSummary(false);
     }
   };
- 
+
   return (
     <main className="dashboard-shell">
       <section className="dashboard-card" aria-label="panel principal">
@@ -364,7 +412,7 @@ function DashboardPage({
             Cerrar sesión
           </button>
         </div>
- 
+
         <nav className="panel-tabs" aria-label="Paneles de gestión de tareas">
           <button
             type="button"
@@ -391,7 +439,7 @@ function DashboardPage({
             Estado
           </button>
         </nav>
- 
+
         {activePanel === "crear" ? (
           <CreateTaskPanel
             tasks={tasks}
@@ -417,7 +465,7 @@ function DashboardPage({
             onDelete={onDeleteTask}
           />
         ) : null}
- 
+
         <div className="summary-panel">
           <button
             type="button"
@@ -439,5 +487,5 @@ function DashboardPage({
     </main>
   );
 }
- 
+
 export default App;

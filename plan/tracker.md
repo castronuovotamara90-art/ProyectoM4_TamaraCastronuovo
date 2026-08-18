@@ -2,43 +2,59 @@
 
 Estado general del proyecto: En progreso
 Etapa activa: E
-Ultima actualizacion: 2026-08-15
+Ultima actualizacion: 2026-08-18
 
-## Tablero de etapas
 
-| Etapa | Estado | Alcance resumido | Tests requeridos | Deploy | Docs |
-|---|---|---|---|---|---|
-| A | Completada | Base React + TypeScript + Vite + Vitest + Vercel | Setup base, render inicial, utilidades de test | Primer deploy tecnico | README setup + scripts + env |
-| B1 | Completada | Auth email/password + rutas privadas | Auth service + forms + guards | Deploy auth base | README auth base |
-| B2 | Completada | Google Authentication | Auth social + CTA Google + errores | Deploy auth social | README auth Google |
-| C | Completada | Crear y listar tareas por usuario | Firestore mocks + TaskForm + TaskList | Deploy CRUD parcial | README tareas v1 |
-| D | Completada | Editar, eliminar, completar | Integracion CRUD completo | Deploy CRUD completo | README tareas v2 |
-| E | En progreso | Resumen por email con SES | Function tests + mocks SES + UI trigger | Deploy email | README email + env Vercel |
-| F | Pendiente | Hardening final | Suite completa + smoke test | Deploy final | README final + checklist |
 
-## Checklist etapa activa: E
+## Checklist 
 
-### Alcance
-- [x] Definir flujo de autenticacion por email/password.
-- [x] Implementar Google auth demo.
-- [x] Crear formulario para agregar tareas por usuario.
-- [x] Listar tareas por usuario autenticado.
-- [x] Editar tareas desde el dashboard.
-- [x] Marcar tareas como completadas.
-- [x] Eliminar tareas del usuario.
-- [x] Crear function de resumen por email con AWS SES.
-- [x] Exponer trigger desde el dashboard para enviar el resumen.
+### Autenticacion
+- [x] Registro con email y password
+- [x] Registro / login con Google
+- [x] Login
+- [x] Logout
+- [x] Proteccion de rutas privadas (no se deben ver tareas sin login)
+- [x] Manejo claro de errores de autenticacion
 
-### Verificacion
-- [ ] `npm run test` ejecuta los flujos de B1, B2, C, D y E.
-- [ ] `npm run build` compila correctamente.
-- [ ] El avance queda publicado en GitHub.
+### Gestion de tareas (usuario autenticado)
+- [] Crear tarea (titulo + descripcion)
+- [] Listar tareas del usuario
+- [] Editar tarea
+- [] Eliminar tarea
+- [] Marcar tarea como completada
+- [] Persistencia en Firestore
+- [] Cada usuario solo ve sus propias tareas
 
-### Documentacion
-- [x] README con descripcion del estado actual.
-- [ ] README con alcance de Etapa E.
-- [x] Plan actualizado con el estado real de cada etapa.
+### Persistencia y sincronizacion
+- [] Datos almacenados en Cloud Firestore
+- [] Filtrado por userId
+- [] Manejo de estados de carga (loading)
+- [] Manejo de errores
+- [] Actualizacion automatica de la UI tras operaciones CRUD
 
-## Bloqueos
+### Email
+- [] Boton para enviar email con resumen del estado de todas las tareas
+- [] Funcion de envio usando AWS SES
+- [] Email de confirmacion de envio
+- [] Sin secretos expuestos en el frontend
 
-- Ninguno registrado.
+### Testing
+- [] Tests unitarios de funciones clave
+- [] Tests de componente TodoForm
+- [] Tests de componente TodoList
+- [x] Mock de servicios externos (Firebase, AWS SES) cuando corresponda
+
+### Deploy
+- [] Deploy en Vercel
+- [] URL publica funcional
+- [] Variables de entorno configuradas en Vercel
+
+### Seguridad
+- [x] Crear .env para desarrollo
+- [x] Crear .env.example sin datos sensibles
+- [x] Credenciales de AWS como variables de entorno
+- [x] Credenciales de Firebase como variables de entorno
+- [x] Agregar .env al .gitignore
+- [x] Verificar que los commits no incluyan variables de entorno / secretos
+
+
