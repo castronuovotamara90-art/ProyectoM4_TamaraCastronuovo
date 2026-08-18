@@ -40,9 +40,9 @@ Ultima actualizacion: 2026-08-18
 
 
 ### Testing
-- [] Tests unitarios de funciones clave
-- [] Tests de componente TodoForm
-- [] Tests de componente TodoList
+- [x] Tests unitarios de funciones clave
+- [x] Tests de componente TodoForm
+- [x] Tests de componente TodoList
 - [x] Mock de servicios externos (Firebase, AWS SES) cuando corresponda
 
 ### Deploy
