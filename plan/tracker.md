@@ -33,10 +33,10 @@ Ultima actualizacion: 2026-08-18
 - [x] Actualizacion automatica de la UI tras operaciones CRUD
 
 ### Email
-- [] Boton para enviar email con resumen del estado de todas las tareas. El email tiene que ser enviado al email del usuario autenticado. 
-- [] Funcion de envio usando AWS SES. Validar que la cuenta de AWS SES en el archivo .env sirva para esto.
-- [] Email de confirmacion de envio
-- [] Sin secretos expuestos en el frontend
+- [x] Boton para enviar email con resumen del estado de todas las tareas. El email tiene que ser enviado al email del usuario autenticado. 
+- [x] Funcion de envio usando AWS SES. Validar que la cuenta de AWS SES en el archivo .env sirva para esto.
+- [x] Email de confirmacion de envio
+- [x] Sin secretos expuestos en el frontend
 
 
 ### Testing

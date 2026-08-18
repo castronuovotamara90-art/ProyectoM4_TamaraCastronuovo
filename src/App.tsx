@@ -369,7 +369,10 @@ function DashboardPage({
         throw new Error("No se pudo enviar el resumen.");
       }
 
-      onSummaryStatusChange("Resumen enviado");
+      const data = (await response.json()) as { messageId?: string };
+      onSummaryStatusChange(
+        data.messageId ? `Resumen enviado a ${session.email} (ID: ${data.messageId})` : "Resumen enviado"
+      );
     } catch {
       onSummaryStatusChange("No se pudo enviar el resumen");
     } finally {

@@ -32,16 +32,15 @@ export function buildSummaryEmail(userEmail: string, tasks: SummaryTask[]) {
 
 export async function sendSummaryEmail(userEmail: string, tasks: SummaryTask[]) {
   const fromEmail = process.env.SES_FROM_EMAIL;
-  const toEmail = process.env.SES_TO_EMAIL;
 
-  if (!fromEmail || !toEmail || !process.env.AWS_REGION) {
+  if (!fromEmail || !process.env.AWS_REGION) {
     throw new Error("Missing SES configuration");
   }
 
   const command = new SendEmailCommand({
     FromEmailAddress: fromEmail,
     Destination: {
-      ToAddresses: [toEmail]
+      ToAddresses: [userEmail]
     },
     Content: {
       Simple: {
@@ -82,7 +81,7 @@ export default async function handler(request: Request) {
     return Response.json({ error: "Missing userEmail" }, { status: 400 });
   }
 
-  await sendSummaryEmail(userEmail, tasks);
+  const result = await sendSummaryEmail(userEmail, tasks);
 
-  return Response.json({ ok: true, userEmail, sentTasks: tasks.length });
+  return Response.json({ ok: true, userEmail, sentTasks: tasks.length, messageId: result.MessageId });
 }

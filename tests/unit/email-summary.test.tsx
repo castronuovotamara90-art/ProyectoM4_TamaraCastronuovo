@@ -30,9 +30,28 @@ describe("Etapa E - resumen por email", () => {
     expect(postMock).toHaveBeenCalledWith(
       "/api/send-summary",
       expect.objectContaining({
-        method: "POST"
+        method: "POST",
+        body: expect.stringContaining("usuario@demo.com")
       })
     );
     expect(await screen.findByText(/resumen enviado/i)).toBeInTheDocument();
+  });
+
+  it("muestra el messageId de SES como confirmacion del envio", async () => {
+    postMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true, messageId: "ses-message-456" })
+    });
+
+    const user = userEvent.setup();
+    renderWithRouter(<App />);
+
+    await user.type(screen.getByLabelText(/email/i), "usuario@demo.com");
+    await user.type(screen.getByLabelText(/password/i), "123456");
+    await user.click(screen.getByRole("button", { name: /iniciar sesi[oó]n/i }));
+
+    await user.click(screen.getByRole("button", { name: /enviar resumen por email/i }));
+
+    expect(await screen.findByText(/ses-message-456/i)).toBeInTheDocument();
   });
 });
